@@ -12,60 +12,60 @@ ir_serial = serial.Serial("/dev/ttyACM0", 9600, timeout = 1)
 #ir_serial = serial.Serial("/dev/tty.usbmodem01231", 9600, timeout = 1)
 
 def captureIR(path):
-  print "Capturing IR..."
-  ir_serial.write("c\r\n")
+  print("Capturing IR...")
+  ir_serial.write(b"c\r\n")
   time.sleep(3.0)
   msg = ir_serial.readline()
-  print msg
-  if path and not 'Time Out' in msg:
+  print(msg)
+  if path and not 'Time Out' in msg.decode():
     saveIR(path)
 
 def playIR(path):
   if path and os.path.isfile(path):
-    print ("Playing IR with %s ..." % path)
+    print("Playing IR with %s ..." % path)
     f = open(path)
     data = json.load(f) 
     f.close()
     recNumber = len(data['data'])
     rawX = data['data']
 
-    ir_serial.write("n,%d\r\n" % recNumber)
+    ir_serial.write(b"n,%d\r\n" % recNumber)
     ir_serial.readline()
 
     postScale = data['postscale']
-    ir_serial.write("k,%d\r\n" % postScale)
+    ir_serial.write(b"k,%d\r\n" % postScale)
     #time.sleep(1.0)
     msg = ir_serial.readline()
-    #print msg
+    #print(msg)
     
     for n in range(recNumber):
         bank = n / 64
         pos = n % 64
         if (pos == 0):
-          ir_serial.write("b,%d\r\n" % bank)
+          ir_serial.write(b"b,%d\r\n" % bank)
     
-        ir_serial.write("w,%d,%d\n\r" % (pos, rawX[n]))
+        ir_serial.write(b"w,%d,%d\n\r" % (pos, rawX[n]))
     
-    ir_serial.write("p\r\n")
+    ir_serial.write(b"p\r\n")
     msg = ir_serial.readline()
-    print msg
+    print(msg)
     #ir_serial.close() 
   else:
-    print "Playing IR..."
-    ir_serial.write("p\r\n")
+    print("Playing IR...")
+    ir_serial.write(b"p\r\n")
     time.sleep(1.0)
     msg = ir_serial.readline()
-    print msg
+    print (msg)
 
 def saveIR(path):
-  print ("Saving IR data to %s ..." % path)
+  print("Saving IR data to %s ..." % path)
   rawX = []
-  ir_serial.write("I,1\r\n")
+  ir_serial.write(b"I,1\r\n")
   time.sleep(1.0)
   recNumberStr = ir_serial.readline()
   recNumber = int(recNumberStr, 16)
   
-  ir_serial.write("I,6\r\n")
+  ir_serial.write(b"I,6\r\n")
   time.sleep(1.0)
   postScaleStr = ir_serial.readline()
   postScale = int(postScaleStr, 10)
@@ -75,9 +75,9 @@ def saveIR(path):
       bank = n / 64
       pos = n % 64
       if (pos == 0):
-          ir_serial.write("b,%d\r\n" % bank)
+          ir_serial.write(b"b,%d\r\n" % bank)
   
-      ir_serial.write("d,%d\n\r" % pos)
+      ir_serial.write(b"d,%d\n\r" % pos)
       xStr = ir_serial.read(3) 
       xData = int(xStr, 16)
       rawX.append(xData)
@@ -87,12 +87,12 @@ def saveIR(path):
   f = open(path, 'w')
   json.dump(data, f)
   f.close()
-  print "Done !"
+  print ("Done !")
 
-
+# TODO: Test
 def measureTemperature():
   #print "Sending T command..."
-  ir_serial.write("T\r\n")
+  ir_serial.write(b"T\r\n")
   
   #print "Reading raw temperature..."
   raw = ir_serial.readline()
@@ -103,14 +103,14 @@ def measureTemperature():
   celsiusTemp = None
   try:
     celsiusTemp = ((5.0 / 1024.0 * float(raw)) - 0.4) / 0.01953 
-    print "Temperature: %s" % "{:4.1f}".format(celsiusTemp)
+    print("Temperature: %s" % "{:4.1f}".format(celsiusTemp))
   except (ValueError, TypeError):
-    print "TemperatureExcetion: raw => %s, status => %s" % (raw, status)
+    print("TemperatureExcetion: raw => %s, status => %s" % (raw, status))
 
-
+# TODO: Test
 def printFirmwareVer():
-  ir_serial.write("V\r\n")
-  print ir_serial.readline().rstrip()
+  ir_serial.write(b"V\r\n")
+  print(ir_serial.readline().rstrip())
   ir_serial.readline()
 
 

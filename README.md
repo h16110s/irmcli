@@ -4,7 +4,7 @@ Command Line Utility for irMagician
 
 ## Getting Started
 
-1. Install Python(>2.7) pyserial:
+1. Install Python3 pyserial:
 
         $ sudo apt-get install python-pip
         $ sudo pip install pyserial
